@@ -1,4 +1,4 @@
-# apr/23/2016 17:30:54 by RouterOS 6.22
+# apr/23/2016 19:02:09 by RouterOS 6.22
 # software id = 2UD3-AZ4N
 #
 /interface bridge
@@ -39,6 +39,15 @@ add address-pool=dhcp_pool1 disabled=no interface=bridge2-DMZ lease-time=3d \
     name=dhcp1-DMZ
 /port
 set 0 name=serial0
+/queue tree
+add max-limit=19M name=def-in packet-mark=def_in parent=global priority=1 \
+    queue=default
+add limit-at=1M max-limit=2M name=voip-in packet-mark=voip_in parent=global \
+    priority=4 queue=default
+add max-limit=19M name=def_out packet-mark=def_out parent=global priority=1 \
+    queue=default
+add limit-at=1M max-limit=2M name=voip_out packet-mark=voip_out parent=global \
+    priority=4 queue=default
 /system logging action
 set 2 remember=yes
 set 3 src-address=0.0.0.0
@@ -114,6 +123,14 @@ add action=mark-routing chain=prerouting connection-state=new \
     dst-address-list=to-ISP1 new-routing-mark=ISP1-rt
 add action=mark-routing chain=prerouting connection-state=new \
     dst-address-list=to-ISP2 new-routing-mark=ISP2-rt
+add action=mark-packet chain=forward comment=def_out new-packet-mark=def_out \
+    src-address=192.168.1.0/24
+add action=mark-packet chain=forward comment=def_in dst-address=\
+    192.168.1.0/24 new-packet-mark=def_in
+add action=mark-packet chain=forward comment=voip_out new-packet-mark=\
+    voip_out src-address=192.168.1.50
+add action=mark-packet chain=forward comment=voip_in dst-address=192.168.1.50 \
+    new-packet-mark=voip_in
 /ip firewall nat
 add action=masquerade chain=srcnat
 add action=netmap chain=dstnat comment="DVR 1" disabled=yes dst-address=\
