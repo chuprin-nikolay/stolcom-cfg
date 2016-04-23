@@ -1,4 +1,4 @@
-# apr/23/2016 15:41:50 by RouterOS 6.22
+# apr/23/2016 17:30:54 by RouterOS 6.22
 # software id = 2UD3-AZ4N
 #
 /interface bridge
@@ -7,13 +7,16 @@ add name=bridge2-DMZ
 /interface ethernet
 set [ find default-name=ether1 ] comment=DMZ name=LAN1-Master
 set [ find default-name=ether2 ] master-port=LAN1-Master name=LAN2-Slave
-set [ find default-name=ether3 ] master-port=LAN1-Master name=LAN3-Slave
+set [ find default-name=ether3 ] comment="VOIP TP Link" master-port=\
+    LAN1-Master name=LAN3-Slave
 set [ find default-name=ether4 ] master-port=LAN1-Master name=LAN4-Slave
-set [ find default-name=ether5 ] name=LAN5-Local
+set [ find default-name=ether5 ] comment="local LAN Stolcom" name=LAN5-Local
 set [ find default-name=ether6 ] comment="Formula 7" name=ether6-WAN1
 set [ find default-name=ether7 ] comment="SXT - Provider 2" name=ether7-WAN2
 /ip neighbor discovery
 set LAN1-Master comment=DMZ
+set LAN3-Slave comment="VOIP TP Link"
+set LAN5-Local comment="local LAN Stolcom"
 set ether6-WAN1 comment="Formula 7"
 set ether7-WAN2 comment="SXT - Provider 2"
 /interface wireless security-profiles
@@ -52,6 +55,9 @@ add address=109.197.29.19/28 interface=ether6-WAN1 network=109.197.29.16
 /ip dhcp-client
 add add-default-route=no dhcp-options=hostname,clientid disabled=no \
     interface=LAN5-Local use-peer-dns=no use-peer-ntp=no
+/ip dhcp-server lease
+add address=192.168.1.50 comment="VOIP TP Link" mac-address=F8:1A:67:F8:77:39 \
+    server=dhcp1-DMZ
 /ip dhcp-server network
 add address=192.168.1.0/24 dns-server=192.168.1.1,8.8.8.8 gateway=192.168.1.1
 /ip dns
